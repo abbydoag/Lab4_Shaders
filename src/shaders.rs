@@ -44,15 +44,20 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     }
 }
 //shader a usar
-pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
-    //black_and_white(fragment, uniforms)
-    // dalmata_shader(fragment, uniforms)
-    cloud_shader(fragment, uniforms)
-    // cellular_shader(fragment, uniforms)
-    //lava_shader(fragment, uniforms)
+pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms, shader_type: &str) -> Color {
+  match shader_type {
+      "cloud_shader" => cloud_shader(fragment, uniforms),
+      "dalmata_shader" => dalmata_shader(fragment, uniforms),
+      "lines_shader" => lines_shader(fragment, uniforms),
+      "cellular_shader" => cellular_shader(fragment, uniforms),
+      "lava_shader" => lava_shader(fragment, uniforms),
+      "gradient_shader"=> gradient_shader(fragment, uniforms),
+      "moon_shader" => moon_shader(fragment, uniforms),
+      _ => Color::new(0, 0, 0),
+  }
 }
 
-fn black_and_white(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+fn lines_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let seed = uniforms.time as f32 * fragment.vertex_position.y * fragment.vertex_position.x;
   
     let mut rng = StdRng::seed_from_u64(seed.abs() as u64);
@@ -187,4 +192,22 @@ fn lava_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let color = dark_color.lerp(&bright_color, noise_value);
   
     color * fragment.intensity
+}
+
+fn gradient_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  let gradient_start = Color::new(0, 0, 255); // Color 1
+  let gradient_end = Color::new(255, 0, 0);   //Color 2
+
+  let t = (fragment.vertex_position.y + 1.0) * 0.5;
+  let color = gradient_start.lerp(&gradient_end, t);
+
+  color * fragment.intensity
+}
+
+fn moon_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  //color
+  let base_color = Color::new(255, 255, 255);
+  //brillo
+  let brightness = 1.2;
+  base_color * brightness * fragment.intensity
 }
