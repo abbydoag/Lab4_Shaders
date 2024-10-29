@@ -52,7 +52,8 @@ pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms, shader_type: &s
       "cellular_shader" => cellular_shader(fragment, uniforms),
       "lava_shader" => lava_shader(fragment, uniforms),
       "gradient_shader"=> gradient_shader(fragment, uniforms),
-      "moon_shader" => moon_shader(fragment, uniforms),
+      "continents_shader" => continents_shader(fragment, uniforms),
+      "rings_shader" => rings_shader(fragment, uniforms),
       _ => Color::new(0, 0, 0),
   }
 }
@@ -156,7 +157,7 @@ fn cellular_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
   
 fn lava_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     // Base colors for the lava effect
-    let bright_color = Color::new(255, 240, 0); // Bright orange (lava-like)
+    let bright_color = Color::new(255, 226, 107); // Bright orange (lava-like)
     let dark_color = Color::new(130, 20, 0);   // Darker red-orange
   
     // Get fragment position
@@ -190,8 +191,13 @@ fn lava_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
   
     // Use lerp for color blending based on noise value
     let color = dark_color.lerp(&bright_color, noise_value);
+    //Brillo
+    let glow_factor = 2.0; //Intensidas
+    let glowing_color = color * glow_factor;
+    let glow_edge = Color::new(198, 33, 0) * (1.0 - noise_value); // White edge for glow
+    let final_color = glowing_color + glow_edge;
   
-    color * fragment.intensity
+    final_color
 }
 
 fn gradient_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
@@ -204,10 +210,59 @@ fn gradient_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
   color * fragment.intensity
 }
 
-fn moon_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
-  //color
-  let base_color = Color::new(255, 255, 255);
-  //brillo
-  let brightness = 1.2;
-  base_color * brightness * fragment.intensity
+fn continents_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  let zoom = 95.0;  
+  let ox = 45.0;    
+  let oy = 45.0;
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+  let t = uniforms.time as f32 * 0.15; // Velocidad de movimiento
+
+  //Rotacion
+  let noise_value = uniforms.noise.get_noise_2d(x * zoom + ox + t, y * zoom + oy);
+
+  let land_color = Color::new(34, 139, 34);
+  let ocean_color = Color::new(0, 0, 255);
+
+  let land_threshold = 0.14;
+
+  let terrain_color = if noise_value > land_threshold {
+      land_color
+  } else {
+      ocean_color
+  };
+
+  terrain_color * fragment.intensity
+}
+
+fn rings_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+
+  // Calcular la distancia al centro
+  let distance = (x * x + y * y).sqrt();
+
+  // Definir los colores de los anillos
+  let ring_color1 = Color::new(200, 200, 100); // Color de un anillo
+  let ring_color2 = Color::new(150, 100, 50);  // Color de otro anillo
+
+  // Definir el ancho de los anillos
+  let ring_width = 0.2;
+  let ring_spacing = 0.5;
+
+  // Calcular el patrón de los anillos
+  let ring_pattern = (distance / ring_spacing).floor() % 2.0;
+
+  // Determinar el color basado en el patrón
+  let base_color = if ring_pattern == 0.0 {
+      ring_color1
+  } else {
+      ring_color2
+  };
+
+  // Modificar la intensidad basado en la distancia
+  let opacity = if distance < 1.0 { 0.0 } else { 1.0 };
+  let final_color = base_color * (opacity * fragment.intensity);
+
+  final_color
 }
