@@ -29,7 +29,8 @@ enum Planet{
     GasGigant,
     Sun,
     LinesPlanet,
-    GradientPlanet
+    GradientPlanet,
+    DotPlanet
 }
 pub struct Uniforms {
     model_matrix: Mat4,
@@ -224,7 +225,7 @@ fn main() {
                 render(&mut framebuffer, &uniforms, &vertex_arrays, "continents_shader");
             },
             Planet::RingPlanet => {
-                render(&mut framebuffer, &uniforms, &vertex_arrays, "dalmata_shader");
+                render(&mut framebuffer, &uniforms, &vertex_arrays, "gradient_shader");
                 render(&mut framebuffer, &uniforms, &rings_vertex_arrays, "rings_shader");
             },
             Planet::GasGigant => {
@@ -238,6 +239,9 @@ fn main() {
             },
             Planet::LinesPlanet => {
                 render(&mut framebuffer, &uniforms, &vertex_arrays, "lines_shader");
+            },
+            Planet::DotPlanet => {
+                render(&mut framebuffer, &uniforms, &vertex_arrays, "dalmata_shader");
             },
             Planet::None => {}
         }        
@@ -316,13 +320,7 @@ fn handle_input(window: &Window, camera: &mut Camera, current_planet: &mut Plane
         *current_planet = if *current_planet == Planet::Sun { Planet::None } else { Planet::Sun };
     }
     if window.is_key_pressed(Key::G, KeyRepeat::No) {
-        *current_planet = if *current_planet == Planet::RingPlanet { Planet::None } else { Planet::RingPlanet };
-    }
-    if window.is_key_pressed(Key::H, KeyRepeat::No) {
-        *current_planet = if *current_planet == Planet::GradientPlanet { Planet::None } else { Planet::GradientPlanet };
-    }
-    if window.is_key_pressed(Key::J, KeyRepeat::No) {
-        *current_planet = if *current_planet == Planet::RingPlanet { Planet::None } else { Planet::RingPlanet };
+        *current_planet = if *current_planet == Planet::DotPlanet { Planet::None } else { Planet::DotPlanet};
     }
 
 }

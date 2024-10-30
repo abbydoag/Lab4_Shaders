@@ -75,30 +75,30 @@ fn lines_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
 }
   
 fn dalmata_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
-    let zoom = 100.0;
-    let ox = 0.0;
-    let oy = 0.0;
-    let x = fragment.vertex_position.x;
-    let y = fragment.vertex_position.y;
-  
-    let noise_value = uniforms.noise.get_noise_2d(
+  let zoom = 220.0; 
+  let ox = 0.0;
+  let oy = 0.0;
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+
+  let noise_value = uniforms.noise.get_noise_2d(
       (x + ox) * zoom,
       (y + oy) * zoom,
-    );
-  
-    let spot_threshold = 0.5;
-    let spot_color = Color::new(255, 255, 255); // White
-    let base_color = Color::new(0, 0, 0); // Black
-  
-    let noise_color = if noise_value < spot_threshold {
+  );
+
+  let spot_threshold = 0.2; 
+  let spot_color = Color::new(159, 182, 255);
+  let base_color = Color::new(30, 58, 55); 
+
+  let noise_color = if noise_value < spot_threshold {
       spot_color
-    } else {
+  } else {
       base_color
-    };
-  
-    noise_color * fragment.intensity
+  };
+
+  noise_color * fragment.intensity
 }
-  
+
 fn cloud_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let zoom = 100.0;  // to move our values 
     let ox = 100.0; // offset x in the noise map
@@ -125,34 +125,34 @@ fn cloud_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
 }
   
 fn cellular_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
-    let zoom = 30.0;  // Zoom factor to adjust the scale of the cell pattern
-    let ox = 50.0;    // Offset x in the noise map
-    let oy = 50.0;    // Offset y in the noise map
-    let x = fragment.vertex_position.x;
-    let y = fragment.vertex_position.y;
-  
-    // Use a cellular noise function to create the plant cell pattern
-    let cell_noise_value = uniforms.noise.get_noise_2d(x * zoom + ox, y * zoom + oy).abs();
-  
-    // Define different shades of green for the plant cells
-    let cell_color_1 = Color::new(85, 107, 47);   // Dark olive green
-    let cell_color_2 = Color::new(124, 252, 0);   // Light green
-    let cell_color_3 = Color::new(34, 139, 34);   // Forest green
-    let cell_color_4 = Color::new(173, 255, 47);  // Yellow green
-  
-    // Use the noise value to assign a different color to each cell
-    let final_color = if cell_noise_value < 0.15 {
-      cell_color_1
-    } else if cell_noise_value < 0.7 {
-      cell_color_2
-    } else if cell_noise_value < 0.75 {
-      cell_color_3
-    } else {
-      cell_color_4
-    };
-  
-    // Adjust intensity to simulate lighting effects (optional)
-    final_color * fragment.intensity
+  let zoom = 30.0;  // Zoom factor to adjust the scale of the cell pattern
+  let ox = 50.0;    // Offset x in the noise map
+  let oy = 50.0;    // Offset y in the noise map
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+
+  // Use a cellular noise function to create the plant cell pattern
+  let cell_noise_value = uniforms.noise.get_noise_2d(x * zoom + ox, y * zoom + oy).abs();
+
+  // Define different shades of green for the plant cells
+  let cell_color_1 = Color::new(91, 206, 219);  
+  let cell_color_2 = Color::new(108, 146, 212);   
+  let cell_color_3 = Color::new(69, 121, 91);   
+  let cell_color_4 = Color::new(43, 0, 186);  
+
+  // Use the noise value to assign a different color to each cell
+  let final_color = if cell_noise_value < 0.15 {
+    cell_color_1
+  } else if cell_noise_value < 0.7 {
+    cell_color_2
+  } else if cell_noise_value < 0.75 {
+    cell_color_3
+  } else {
+    cell_color_4
+  };
+
+  // Adjust intensity to simulate lighting effects (optional)
+  final_color * fragment.intensity
 }
   
 fn lava_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
@@ -242,26 +242,38 @@ fn rings_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
   // Calcular la distancia al centro
   let distance = (x * x + y * y).sqrt();
 
-  // Definir los colores de los anillos
-  let ring_color1 = Color::new(200, 200, 100); // Color de un anillo
-  let ring_color2 = Color::new(150, 100, 50);  // Color de otro anillo
+  // Definir los colores
+  let color_blue = Color::new(0, 0, 255);       // Azul
+  let color_silver = Color::new(192, 192, 192); // Plateado
+  let color_emerald = Color::new(80, 200, 120); // Verde esmeralda
 
-  // Definir el ancho de los anillos
-  let ring_width = 0.2;
-  let ring_spacing = 0.5;
+  // Definir el ancho y espaciado de los anillos
+  let ring_width = 0.2; // Ancho de los anillos
+  let ring_spacing = 0.5; // Espaciado entre anillos
 
   // Calcular el patrón de los anillos
-  let ring_pattern = (distance / ring_spacing).floor() % 2.0;
+  let ring_pattern = (distance / ring_spacing).floor();
 
-  // Determinar el color basado en el patrón
-  let base_color = if ring_pattern == 0.0 {
-      ring_color1
+  // Determinar el color base utilizando una mezcla
+  let base_color = if ring_pattern % 2.0 == 0.0 {
+      color_blue
+  } else if ring_pattern % 3.0 == 1.0 {
+      color_silver
   } else {
-      ring_color2
+      color_emerald
   };
 
-  // Modificar la intensidad basado en la distancia
-  let opacity = if distance < 1.0 { 0.0 } else { 1.0 };
+  // Calcular la intensidad de los anillos usando un gradiente
+  let normalized_distance = (distance % ring_spacing) / ring_width;
+
+  // Asegúrate de que la normalización no produzca valores negativos
+  let opacity = if normalized_distance < 1.0 {
+      1.0 - normalized_distance // Desvanecerse hacia el borde
+  } else {
+      0.0
+  };
+
+  // Modificar el color final con la intensidad
   let final_color = base_color * (opacity * fragment.intensity);
 
   final_color
