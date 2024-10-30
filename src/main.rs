@@ -225,7 +225,7 @@ fn main() {
                 render(&mut framebuffer, &uniforms, &vertex_arrays, "continents_shader");
             },
             Planet::RingPlanet => {
-                render(&mut framebuffer, &uniforms, &vertex_arrays, "gradient_shader");
+                render(&mut framebuffer, &uniforms, &vertex_arrays, "spiral_shader");
                 render(&mut framebuffer, &uniforms, &rings_vertex_arrays, "rings_shader");
             },
             Planet::GasGigant => {

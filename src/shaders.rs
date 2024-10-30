@@ -54,6 +54,7 @@ pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms, shader_type: &s
       "gradient_shader"=> gradient_shader(fragment, uniforms),
       "continents_shader" => continents_shader(fragment, uniforms),
       "rings_shader" => rings_shader(fragment, uniforms),
+      "spiral_shader" => spiral_shader(fragment, uniforms),
       _ => Color::new(0, 0, 0),
   }
 }
@@ -66,9 +67,9 @@ fn lines_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let random_number = rng.gen_range(0..=100);
   
     let black_or_white = if random_number < 50 {
-      Color::new(0, 0, 0)
+      Color::new(92, 137, 182)
     } else {
-      Color::new(255, 255, 255)
+      Color::new(188, 67, 67)
     };
   
     black_or_white * fragment.intensity
@@ -239,22 +240,18 @@ fn rings_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
   let x = fragment.vertex_position.x;
   let y = fragment.vertex_position.y;
 
-  // Calcular la distancia al centro
+  // Distancia al centro
   let distance = (x * x + y * y).sqrt();
 
-  // Definir los colores
   let color_blue = Color::new(0, 0, 255);       // Azul
   let color_silver = Color::new(192, 192, 192); // Plateado
   let color_emerald = Color::new(80, 200, 120); // Verde esmeralda
 
-  // Definir el ancho y espaciado de los anillos
   let ring_width = 0.2; // Ancho de los anillos
   let ring_spacing = 0.5; // Espaciado entre anillos
 
-  // Calcular el patrón de los anillos
   let ring_pattern = (distance / ring_spacing).floor();
 
-  // Determinar el color base utilizando una mezcla
   let base_color = if ring_pattern % 2.0 == 0.0 {
       color_blue
   } else if ring_pattern % 3.0 == 1.0 {
@@ -263,18 +260,39 @@ fn rings_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
       color_emerald
   };
 
-  // Calcular la intensidad de los anillos usando un gradiente
+  //Intensidad de los anillos con gradiente
   let normalized_distance = (distance % ring_spacing) / ring_width;
 
-  // Asegúrate de que la normalización no produzca valores negativos
   let opacity = if normalized_distance < 1.0 {
-      1.0 - normalized_distance // Desvanecerse hacia el borde
+      1.0 - normalized_distance 
   } else {
       0.0
   };
 
-  // Modificar el color final con la intensidad
   let final_color = base_color * (opacity * fragment.intensity);
 
   final_color
+}
+
+fn spiral_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+
+  // Calcula la distancia desde el centro
+  let radius = (x * x + y * y).sqrt();
+
+  let angle = y.atan2(x) + uniforms.time as f32 * 0.1; // Rotación
+  let spiral_pattern = (radius * 3.0 + angle).sin() * 0.7; //frecuencia y amplitud
+
+  let base_color = Color::new(227, 228, 229); 
+  let spiral_color = Color::new(62, 95, 138);
+  let threshold = 0.0;
+
+  let final_color = if spiral_pattern > threshold {
+      spiral_color
+  } else {
+      base_color
+  };
+
+  final_color * fragment.intensity
 }
